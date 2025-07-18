@@ -37,22 +37,14 @@ def desenhar_grade(tela):
 def desenhar_retangulo(tela, pos_grid, cor):
     x, y = pos_grid
     rect = pygame.Rect(x * TAMANHO_CELULA, y * TAMANHO_CELULA, TAMANHO_CELULA, TAMANHO_CELULA)
-    # Adicionando logs para achar de onde vem o Bug
-    try:
-        pygame.draw.rect(tela, cor, rect)
-    except Exception as e:
-        print(f"ERRO desenhando retângulo em {pos_grid}: {e}")    
-
+    pygame.draw.rect(tela, cor, rect)
+    
 def desenhar_circulo(tela, pos_grid, cor, raio_fator=0.4):
     x, y = pos_grid
     centro_x = int(x * TAMANHO_CELULA + TAMANHO_CELULA / 2)
     centro_y = int(y * TAMANHO_CELULA + TAMANHO_CELULA / 2)
     raio = int(TAMANHO_CELULA * raio_fator)
-    # Adicionando logs para achar de onde vem o Bug
-    try:
-        pygame.draw.circle(tela, cor, (centro_x, centro_y), raio)
-    except Exception as e:
-        print(f"ERRO desenhando o retângulo em {pos_grid}: {e}")
+    pygame.draw.circle(tela, cor, (centro_x, centro_y), raio)
 
 def desenhar_caminho(tela, caminho):
     for passo in caminho:
@@ -149,13 +141,7 @@ def main():
                     pos_inicial=estado_jogo["pos_robo"], pos_objetivo=objetivo_atual, obstaculos=estado_jogo["obstaculos"],
                     largura_grid=LARGURA_GRID, altura_grid=ALTURA_GRID, tem_bola=estado_jogo["tem_bola"])
             if estado_jogo["caminho_atual"]:
-                # estado_jogo["pos_robo"] = estado_jogo["caminho_atual"].pop(0)
-                proximo_passo = estado_jogo["caminho_atual"].pop(0)
-                if not (0 <= proximo_passo[0] < LARGURA_GRID and 0 <= proximo_passo[1] < ALTURA_GRID):
-                    print(f"ERRO: Próximo passo inválido: {proximo_passo}")
-                else:
-                    estado_jogo["pos_robo"] = proximo_passo
-
+                estado_jogo["pos_robo"] = estado_jogo["caminho_atual"].pop(0)
             if not estado_jogo["tem_bola"] and estado_jogo["pos_robo"] == estado_jogo["pos_bola"]:
                 estado_jogo["tem_bola"] = True
                 estado_jogo["caminho_atual"] = []
@@ -168,22 +154,8 @@ def main():
 
         tela.fill(COR_FUNDO)
         desenhar_grade(tela)
-        # Verificando segurança de posições
-        for key in ["pos_robo", "pos_bola", "pos_gol"]:
-            x, y = estado_jogo[key]
-            if not (0 <= x < LARGURA_GRID and 0 <= y < ALTURA_GRID):
-                print(f"ERRO: {key} fora da grade: ({x}, {y})")
-
-        for pos in estado_jogo["obstaculos"]:
-            x, y = pos
-            if not (0 <= x < LARGURA_GRID and 0 <= y < ALTURA_GRID):
-                print(f"ERRO: obstáculo fora da grade: ({x}, {y})")
-                
+        
         if estado_jogo["caminho_atual"]:
-            # verificando posição fora da grade
-            for pos in estado_jogo["caminho_atual"]:
-                if not (0 <= pos[0] < LARGURA_GRID and 0 <= pos[1] < ALTURA_GRID):
-                    print(f"ERRO: Posição fora da grade no caminho: {pos}")
             desenhar_caminho(tela, estado_jogo["caminho_atual"])
 
         desenhar_retangulo(tela, estado_jogo["pos_gol"], COR_GOL)
