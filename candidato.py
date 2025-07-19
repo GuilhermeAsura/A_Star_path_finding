@@ -40,13 +40,32 @@ def reconstruct_path(current_node, largura_grid, altura_grid):
     path.reverse()
     return path
 
-def heuristic(p1, p2):
+def manhattan_heuristic(p1, p2):
     """
-    Calcula a distância de Manhattan.
+    Calcula a distância de Manhattan - similar à distância vetorial. Com essa heurística temos o que a literatura chama de A* Greedy, 
+    essa variação do algorítmo apenas busca a forma mais curta chegar ao destino. Segue análise:
+
+    - Vantagens: 
+        - O algorítmo converge mais rápido visto que a exigência de cáculos é baixa.
+        - Requer menos poder computacional.
+
+    - Desvantagens:
+        - Fornece uma trajetória não otimizada.
     """
     x1, y1 = p1
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2)
+
+def octile_heuristic(p1, p2):
+    """
+    Calcula a distância Octal. Essa heurística é a melhor aplicável em Grids pois permite
+    uma acurácia maior para movimentos com 8 direções.
+    """
+    x1, y1 = p1
+    x2, y2 = p2
+    dx = abs(x1 - x2)
+    dy = abs(y1 - y2)
+    return max(dx, dy) + (math.sqrt(2) - 1) * min(dx, dy)
 
 def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altura_grid, tem_bola=False):
     """
@@ -54,7 +73,7 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
     """
     
     # 0. --- VERIFICAÇÕES DE ENTRADA ---
-    # Validar tipos de entrada
+    # Validação dos tipos de entrada
     if not isinstance(pos_inicial, tuple) or len(pos_inicial) != 2:
         print(f"ERRO: pos_inicial deve ser uma tupla (x, y), recebido: {pos_inicial}")
         return []
@@ -62,7 +81,7 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
         print(f"ERRO: pos_objetivo deve ser uma tupla (x, y), recebido: {pos_objetivo}")
         return []
     
-    # Validar limites
+    # Validação limites da janela do pygame
     for nome, pos in [("inicial", pos_inicial), ("objetivo", pos_objetivo)]:
         x, y = pos
         if not (isinstance(x, (int, float)) and isinstance(y, (int, float))):
@@ -73,7 +92,7 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
             return []
 
     # 1. --- CRIAÇÃO DO GRID ---
-    # Criar grid como [y][x] para acesso mais natural
+    # Criação grid [y][x] 
     grid = []
     for y in range(altura_grid):
         row = []
@@ -81,7 +100,7 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
             row.append(Node(x, y))
         grid.append(row)
     
-    # Marcar obstáculos
+    # Marcando obstáculos
     for obs_pos in obstaculos:
         if not isinstance(obs_pos, tuple) or len(obs_pos) != 2:
             print(f"AVISO: Obstáculo inválido ignorado: {obs_pos}")
@@ -99,7 +118,7 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
     end_node = grid[int(pos_objetivo[1])][int(pos_objetivo[0])]    # [y][x]
     
     start_node.g_score = 0
-    start_node.h_score = heuristic(start_node.get_pos(), end_node.get_pos())
+    start_node.h_score = octile_heuristic(start_node.get_pos(), end_node.get_pos())
     start_node.f_score = start_node.h_score
 
     # 2. --- INICIALIZAÇÃO DO A* ---
@@ -158,7 +177,7 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
                 if temp_g_score < neighbor_node.g_score:
                     neighbor_node.parent = current_node
                     neighbor_node.g_score = temp_g_score
-                    neighbor_node.h_score = heuristic(neighbor_node.get_pos(), end_node.get_pos())
+                    neighbor_node.h_score = octile_heuristic(neighbor_node.get_pos(), end_node.get_pos())
                     neighbor_node.f_score = neighbor_node.g_score + neighbor_node.h_score
 
                     if neighbor_node.get_pos() not in open_set_hash:
