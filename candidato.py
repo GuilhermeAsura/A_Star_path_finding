@@ -27,7 +27,7 @@ class Node:
 def reconstruct_path(current_node, largura_grid, altura_grid):
     """
     Cria a lista de coordenadas do caminho final.
-    Garante que todas as posições estão dentro dos limites da grade.
+    Garante que todas as posições estejam dentro dos limites da grade ~ evita bug de explosão pra fora do grid
     """
     path = []
     while current_node.parent is not None:
@@ -69,10 +69,10 @@ def octile_heuristic(p1, p2):
 
 def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altura_grid, tem_bola=False):
     """
-    Implementação do algoritmo A* com um limite de iterações para segurança.
+    Implementação do algoritmo A* com um limite de iterações para segurança ~ evita bug de explosão pra fora do grid
     """
     
-    # Validação dos tipos de entrada
+    # Validação dos tipos de entrada ~ avisa entradas duvidosas nas variáveis de posições
     if not isinstance(pos_inicial, tuple) or len(pos_inicial) != 2:
         print(f"ERRO: pos_inicial deve ser uma tupla (x, y), recebido: {pos_inicial}")
         return []
@@ -80,7 +80,7 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
         print(f"ERRO: pos_objetivo deve ser uma tupla (x, y), recebido: {pos_objetivo}")
         return []
     
-    # Validação limites da janela do pygame
+    # Validação limites da janela do pygame ~ novamente um pretenciosismo contra explosão pra fora do grid
     for nome, pos in [("inicial", pos_inicial), ("objetivo", pos_objetivo)]:
         x, y = pos
         if not (isinstance(x, (int, float)) and isinstance(y, (int, float))):
@@ -112,9 +112,11 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
         else:
             print(f"AVISO: Obstáculo fora da grade ignorado: {obs_pos}")
 
-    start_node = grid[int(pos_inicial[1])][int(pos_inicial[0])]  # [y][x]
-    end_node = grid[int(pos_objetivo[1])][int(pos_objetivo[0])]    # [y][x]
+    # -> [y][x] : linha X coluna
+    start_node = grid[int(pos_inicial[1])][int(pos_inicial[0])]  
+    end_node = grid[int(pos_objetivo[1])][int(pos_objetivo[0])]    
     
+    # Definindo valores iniciais
     start_node.g_score = 0
     start_node.h_score = octile_heuristic(start_node.get_pos(), end_node.get_pos())
     start_node.f_score = start_node.h_score
@@ -126,14 +128,14 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
     open_set_hash = {start_node.get_pos()}
     closed_set = set()
 
-    # Loop principal do A*
+    # Definindo número de iterações para o Loop principal do algorítmo
     max_iterations = largura_grid * altura_grid * 5 
     iterations = 0
 
     while not open_set.empty():
         iterations += 1
         if iterations > max_iterations:
-            print("Pathfinding timeout: A* excedeu o limite de iterações.") # verificando se algo ia pra fora do grid
+            print("Pathfinding timeout: A* excedeu o limite de iterações.") # verificando se algo explode pra fora do grid
             return []  
 
         current_node = open_set.get()[2]
@@ -199,14 +201,18 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
                 if tem_bola:
                     move_cost *= 2
 
+                # função de custo real atualizada com penalidades
                 temp_g_score = current_node.g_score + move_cost
 
+                # Verificando custos dos caminhos encontrados. Se um caminho mais "barato" for encontrado define o nó
+                # em questão como melhor camimho
                 if temp_g_score < neighbor_node.g_score:
                     neighbor_node.parent = current_node
                     neighbor_node.g_score = temp_g_score
                     neighbor_node.h_score = octile_heuristic(neighbor_node.get_pos(), end_node.get_pos())
                     neighbor_node.f_score = neighbor_node.g_score + neighbor_node.h_score
 
+                    # Verifica se o nó em questão tá na lista de prioridade, se não, adiciona-o
                     if neighbor_node.get_pos() not in open_set_hash:
                         count += 1
                         open_set.put((neighbor_node.f_score, count, neighbor_node))
