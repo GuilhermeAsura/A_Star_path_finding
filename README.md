@@ -85,9 +85,9 @@ O arquivo `candidato.py` contém uma implementação do algoritmo A\* personaliz
 ### Características:
 
 * Implementação: Construído em torno de uma classe Node para representar células de grade, o algoritmo garante uma execução segura e completa do pathfinding.
-* Estruturas de Dados: Uma PriorityQueue gerencia o conjunto aberto, sempre selecionando o nó mais promissor para expansão.
+* Estruturas de Dados: Uma PriorityQueue gerencia o conjunto aberto, selecionando o nó mais promissor para expansão.
 * Custo de Movimento: O custo de movimento é calculado levando em consideração estados de esferas, movimento diagonal e zonas de perigo.
-* Heurística Octile: A função heurística utiliza a distância Octile — um método de estimativa refinado para grades com movimento diagonal.
+* Heurística Octile: A função heurística utiliza a distância Octile — um método de estimativa mais adequada para grids com movimento diagonal.
 * Mecanismos de Segurança: Inclui validação de entrada, verificações de limites e um limite máximo de iteração para evitar acesso inválido ou loops infinitos em cenários insolúveis (pouco eficaz com o bug da janela do pygame no linux).
 
 ---
